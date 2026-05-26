@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-description: Use when facing a complex task requiring multi-step coordination, task dependency management, or automatic skill composition. Triggers when task involves multiple domains like UI and backend together, has clear dependency chains between sub-tasks, needs parallel execution with context flow between stages, or requires more than simple sequential agent dispatch.
+description: Use when a task is too complex for a single agent dispatch — multiple sub-tasks that span different domains like UI and backend, tasks with dependencies or ordering requirements, or requests involving parallel work that needs coordination. Also triggers when task mentions pipeline, workflow, team collaboration, or multi-step implementation.
 ---
 
 # Orchestrator
@@ -44,19 +44,7 @@ digraph when_to_use {
 
 ## The Four Phases
 
-```dot
-digraph phases {
-    rankdir=TB;
-    "Phase 1: Clarify" [shape=box, style=filled, fillcolor=lightyellow];
-    "Phase 2: Route Skills" [shape=box, style=filled, fillcolor=lightblue];
-    "Phase 3: Decide Mode" [shape=box, style=filled, fillcolor=lightgreen];
-    "Phase 4: Execute" [shape=box, style=filled, fillcolor=lightcoral];
-
-    "Phase 1: Clarify" -> "Phase 2: Route Skills";
-    "Phase 2: Route Skills" -> "Phase 3: Decide Mode";
-    "Phase 3: Decide Mode" -> "Phase 4: Execute";
-}
-```
+Phases execute in order: **Clarify → Route Skills → Decide Mode → Execute**
 
 ### Phase 1: Clarify Requirements
 
@@ -73,13 +61,7 @@ Engage in multi-turn dialogue to understand the task. Do NOT skip this phase.
    - What are the constraints or non-goals?
 3. **Confirm understanding** — Restate the task in your own words, ask for approval
 
-**Questions to ask (pick relevant ones, one at a time):**
-
-- "What's the end result you want?"
-- "Can you break this down into steps? Which steps depend on others?"
-- "What technologies or domains does this touch?"
-- "Are there any constraints I should know about?"
-- "What would make this complete for you?"
+**Questions to ask (pick relevant ones, one at a time):** overall goal, sub-tasks and their dependencies, technical domains involved, constraints, and what "done" looks like.
 
 **Exception:** If the request is to design something entirely new from scratch, recommend using `superpowers:brainstorming` → `superpowers:writing-plans` instead. Orchestrator is for coordinating known tasks, not open-ended design exploration.
 
@@ -99,7 +81,7 @@ Invoke `superpowers:skill-router` (via Skill tool) to identify which skills shou
 
 ### Phase 3: Decide Execution Mode
 
-Read the routing logic in `@routing-logic.md` (this directory) and select the execution mode.
+Read the routing logic in `routing-logic.md` (in this skill's directory) and select the execution mode.
 
 **Quick decision:**
 
@@ -112,76 +94,28 @@ Read the routing logic in `@routing-logic.md` (this directory) and select the ex
 
 ### Phase 4: Execute
 
-Execute using the selected mode. Reference `@workflow-patterns.md` for construction patterns.
+Execute using the selected mode. Read `workflow-patterns.md` in this skill's directory for construction patterns and code templates.
 
-#### Agent Mode
+**Agent Mode:** Dispatch single Agent with skill injection in prompt. Review result.
 
-1. Build prompt with skill injection instructions from Phase 2
-2. Dispatch single Agent
-3. Review result
+**Workflow Mode:** Build a Workflow script with `pipeline()` for sequential stages and `parallel()` for independent tasks. Each `agent()` call gets skill injection.
 
-```
-Agent({
-  description: "Task description",
-  prompt: "{task details}\n\nIMPORTANT: Before starting, invoke the Skill tool with skill=\"{matched-skill}\" to load domain-specific guidance.",
-  subagent_type: "general-purpose"
-})
-```
+**Team Mode:** Create team, create tasks with `addBlockedBy` dependencies, spawn teammates with skill injection in their prompts, monitor via `TaskList`, shutdown when done.
 
-#### Workflow Mode
-
-1. Construct a Workflow script following patterns from `@workflow-patterns.md`
-2. Define `meta.phases` matching the task stages
-3. Use `pipeline()` for sequential context flow
-4. Use `parallel()` for independent same-level tasks
-5. Inject skill loading instructions into each `agent()` prompt
-
-**Skill injection in Workflow agent calls:**
-
-```
-agent('{task prompt}\n\nIMPORTANT: Before starting, invoke the Skill tool with skill="{skill-name}" to load domain-specific guidance.', {label: 'task-label', schema: RESULT_SCHEMA})
-```
-
-#### Team Mode
-
-1. `TeamCreate({ team_name: '...', description: '...' })`
-2. `TaskCreate` for each sub-task with `addBlockedBy` for dependencies
-3. Spawn teammates via `Agent` with `team_name` and descriptive `name`
-4. Each teammate's prompt includes skill injection instructions
-5. Monitor via `TaskList`
-6. When complete, shutdown teammates and `TeamDelete()`
-
-**Skill injection in Team agent prompts:**
-
-```
-Agent({
-  name: "role-name",
-  team_name: "team-name",
-  prompt: "You are the {role}. Your responsibilities: ...\n\nIMPORTANT: Before starting your tasks, invoke the Skill tool with skill=\"{matched-skill}\" to load domain-specific guidance. Check TaskList for available work."
-})
-```
+**Skill injection pattern (all modes):** Append to every agent prompt: `Before starting, invoke the Skill tool with skill="{matched-skill-name}" to load domain-specific guidance.`
 
 ## Context Passing Between Tasks
 
-**Pipeline mode:** Use `pipeline()` — each stage receives `(prevResult, originalItem, index)` from the previous stage. Include previous results in the next agent's prompt.
-
-**Team mode:** When a task completes, the teammate sends a message via `SendMessage`. The downstream teammate reads context from messages and `TaskGet` descriptions.
-
-**Agent mode:** No context passing needed — single task.
+**Pipeline:** `pipeline()` passes `(prevResult, originalItem, index)` — upstream output flows downstream.
+**Team:** `SendMessage` passes context between roles. Downstream reads from messages and `TaskGet`.
+**Agent:** No context passing — single task.
 
 ## Handling Problems During Execution
 
-**Agent fails or returns BLOCKED:**
-- Assess the blocker. If it's a context issue, re-dispatch with more information. If it's a scope issue, break the task down further.
-
-**Workflow agent returns unexpected results:**
-- The pipeline continues. Include the raw result and ask the next agent to work with what's available.
-
-**Team task stalled:**
-- Check `TaskList`. If a task is blocking others, send a message to the owner. If they're stuck, re-assign or break the task down.
-
-**No skills matched for a task:**
-- Proceed without skill injection. Not every task needs a specialized skill.
+- **Agent BLOCKED:** Re-dispatch with more context or break task down
+- **Unexpected results:** Pipeline continues with what's available
+- **Team task stalled:** Check `TaskList`, message the owner, re-assign if needed
+- **No skills matched:** Proceed without injection — not every task needs specialized skills
 
 ## Red Flags
 
@@ -200,6 +134,6 @@ Agent({
 - **superpowers:dispatching-parallel-agents** — Simplified parallel dispatch (alternative to full Workflow for simple cases)
 - **superpowers:subagent-driven-development** — Sequential plan execution (alternative for pre-written plans)
 
-**Supporting references:**
-- **@routing-logic.md** — Decision tree for mode selection
-- **@workflow-patterns.md** — Construction patterns for Workflow scripts and Team setup
+**Supporting references (in this skill's directory):**
+- `routing-logic.md` — Decision tree for mode selection
+- `workflow-patterns.md` — Construction patterns for Workflow scripts and Team setup

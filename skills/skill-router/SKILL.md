@@ -1,6 +1,6 @@
 ---
 name: skill-router
-description: Use when orchestrator or another skill needs to identify which local skills match a given task. Scans all registered skill frontmatter by name and description fields, performs semantic keyword matching against task descriptions, and returns a prioritized list of matching skills with injection instructions for agent prompts.
+description: Use when preparing to dispatch an agent for a task and unsure which installed skills are relevant, or when orchestrator needs to map sub-tasks to specialized skills. Triggers when task mentions UI design, debugging, testing, game engine, or other domain-specific keywords that might match installed skills.
 ---
 
 # Skill Router
