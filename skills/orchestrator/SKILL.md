@@ -115,10 +115,14 @@ If any `agent()` prompt is missing skill injection when Phase 2 found matches, S
 Route based on execution mode decided in Phase 3.
 
 **Workflow Mode — Direct Execution:**
-Build a Workflow script using patterns from `workflow-patterns.md`. Do NOT invoke writing-plans — Workflow handles its own task construction. Each `agent()` call gets skill injection. Use `pipeline()` for sequential stages, `parallel()` for independent tasks.
+Build a Workflow script using patterns from `workflow-patterns.md`. Do NOT invoke writing-plans — Workflow handles its own task construction.
+
+**CRITICAL:** Include a `SKILL_INJECTIONS` map at the top of your script (see `routing-logic.md` "Phase 2 → Phase 4 Data Contract"). Every `agent()` call MUST append the injection string from this map for tasks with matched skills. Use `pipeline()` for sequential stages, `parallel()` for independent tasks.
 
 **Team Mode — Direct Execution:**
 Create team, create tasks with `addBlockedBy` dependencies, spawn teammates with skill injection. Do NOT invoke writing-plans — Team handles its own coordination. Monitor via `TaskList`, shutdown when done.
+
+**CRITICAL:** Include skill injection strings in each teammate's prompt. See `routing-logic.md` "Phase 2 → Phase 4 Data Contract" for the pattern.
 
 **Agent Mode — Via writing-plans:**
 If sub-tasks need detailed implementation plans (code steps, file paths, test commands), invoke `superpowers:writing-plans`. Pass an **execution context** that writing-plans embeds in the plan header:
