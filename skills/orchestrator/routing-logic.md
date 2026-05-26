@@ -102,3 +102,47 @@ For any mode with dependencies:
 This DAG directly maps to:
 - Workflow: `parallel()` for same-level, `pipeline()` stages for levels
 - Team: `TaskCreate(addBlockedBy)` based on DAG edges
+
+## Phase 2 → Phase 4 Data Contract
+
+Phase 2 (skill-router) output MUST be materialized as a `SKILL_INJECTIONS` object at the top of any Workflow script or Team config. This ensures the routing results survive the transition from Phase 2 analysis to Phase 4 execution.
+
+**Workflow scripts — add at the top of the script body:**
+
+```javascript
+// === SKILL INJECTIONS (from Phase 2 routing) ===
+// MUST be filled before writing any agent() call
+const SKILL_INJECTIONS = {
+  'T1': [],  // no skills matched
+  'T2': ['IMPORTANT: Before starting, invoke the Skill tool with skill="ui-ux-pro-max:ui-ux-pro-max" to load domain-specific guidance.'],
+  // ... fill for each task
+}
+```
+
+**Using injections in agent() calls:**
+
+```javascript
+// For tasks with matched skills — append injection to prompt
+await agent(
+  'Implement responsive layout...\n\n' + SKILL_INJECTIONS['T2'].join('\n'),
+  { label: 'T2', phase: 'Core Components' }
+)
+
+// For tasks with no matches — no injection needed
+await agent(
+  'Install dependencies...',
+  { label: 'T1', phase: 'Foundation' }
+)
+```
+
+**Team mode — include in each teammate's prompt:**
+
+```javascript
+Agent({
+  name: 'designer',
+  team_name: 'project-team',
+  prompt: 'You are the UI designer.\n\n' + SKILL_INJECTIONS['T2'].join('\n') + '\n\nClaim and complete tasks from TaskList.'
+})
+```
+
+This contract is enforced by the Phase 4 Pre-flight Checklist in SKILL.md.
