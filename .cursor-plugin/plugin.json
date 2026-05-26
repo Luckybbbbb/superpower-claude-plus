@@ -1,14 +1,14 @@
 {
-  "name": "superpowers",
-  "displayName": "Superpowers",
-  "description": "Core skills library: TDD, debugging, collaboration patterns, and proven techniques",
-  "version": "5.1.0",
+  "name": "superpower-claude-plus",
+  "displayName": "Superpower Claude Plus",
+  "description": "Enhanced superpowers: orchestrator, skill-router, Team/Workflow integration, TDD, debugging, and collaboration workflows",
+  "version": "5.2.0",
   "author": {
-    "name": "Jesse Vincent",
-    "email": "jesse@fsck.com"
+    "name": "Luckybbbbb",
+    "url": "https://github.com/Luckybbbbb"
   },
-  "homepage": "https://github.com/obra/superpowers",
-  "repository": "https://github.com/obra/superpowers",
+  "homepage": "https://github.com/Luckybbbbb/superpower-claude-plus",
+  "repository": "https://github.com/Luckybbbbb/superpower-claude-plus",
   "license": "MIT",
   "keywords": [
     "skills",
@@ -16,7 +16,9 @@
     "debugging",
     "collaboration",
     "best-practices",
-    "workflows"
+    "workflows",
+    "orchestrator",
+    "skill-router"
   ],
   "skills": "./skills/",
   "agents": "./agents/",
