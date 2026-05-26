@@ -93,13 +93,16 @@ These thoughts mean STOP—you're rationalizing:
 | "I'll just do this one thing first" | Check BEFORE doing anything. |
 | "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
 | "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
+| "This task is too complex to handle directly" | Complex multi-step tasks should use `superpowers:orchestrator` for coordinated execution. |
+| "I need to handle multiple subsystems at once" | Multi-domain tasks benefit from `superpowers:orchestrator` with automatic skill routing via `superpowers:skill-router`. |
 
 ## Skill Priority
 
 When multiple skills could apply, use this order:
 
 1. **Process skills first** (brainstorming, debugging) - these determine HOW to approach the task
-2. **Implementation skills second** (frontend-design, mcp-builder) - these guide execution
+2. **Orchestration skills second** (orchestrator) - these coordinate multi-step tasks with automatic skill routing
+3. **Implementation skills third** (frontend-design, mcp-builder) - these guide execution
 
 "Let's build X" → brainstorming first, then implementation skills.
 "Fix this bug" → debugging first, then domain-specific skills.
