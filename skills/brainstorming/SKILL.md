@@ -111,7 +111,10 @@ digraph brainstorming {
 - Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
   - (User preferences for spec location override this default)
 - Use elements-of-style:writing-clearly-and-concisely skill if available
-- Commit the design document to git
+
+<HARD-GATE>
+You MUST commit the spec to git immediately after writing it. Run `git add docs/superpowers/specs/... && git commit -m "docs: add design spec for ..."` before proceeding to Spec Self-Review. Do NOT skip this commit.
+</HARD-GATE>
 
 **Spec Self-Review:**
 After writing the spec document, look at it with fresh eyes:
