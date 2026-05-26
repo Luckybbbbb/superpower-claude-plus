@@ -104,8 +104,9 @@ When multiple skills could apply, use this order:
 2. **Orchestration skills second** (orchestrator) - these coordinate multi-step tasks with automatic skill routing
 3. **Implementation skills third** (frontend-design, mcp-builder) - these guide execution
 
-"Let's build X" → brainstorming first, then implementation skills.
+"Let's build X" → brainstorming → orchestrator → writing-plans → execution.
 "Fix this bug" → debugging first, then domain-specific skills.
+"Handle these tasks in parallel" → orchestrator directly.
 
 ## Skill Types
 

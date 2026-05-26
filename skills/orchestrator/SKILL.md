@@ -18,52 +18,58 @@ Intelligent task orchestrator that analyzes complex requests, maps them to speci
 ```dot
 digraph when_to_use {
     "Complex task received?" [shape=diamond];
+    "Has approved spec?" [shape=diamond];
     "Multiple sub-tasks?" [shape=diamond];
-    "Tasks have dependencies?" [shape=diamond];
     "use superpowers:orchestrator" [shape=box, style=filled, fillcolor=lightgreen];
     "Use single skill or agent" [shape=box];
+    "Use superpowers:brainstorming first" [shape=box];
 
-    "Complex task received?" -> "Multiple sub-tasks?" [label="yes"];
-    "Multiple sub-tasks?" -> "Tasks have dependencies?" [label="yes"];
-    "Tasks have dependencies?" -> "use superpowers:orchestrator" [label="yes"];
-    "Tasks have dependencies?" -> "use superpowers:orchestrator" [label="no but multi-domain"];
+    "Complex task received?" -> "Has approved spec?" [label="yes"];
+    "Has approved spec?" -> "use superpowers:orchestrator" [label="yes - from brainstorming"];
+    "Has approved spec?" -> "Multiple sub-tasks?" [label="no"];
+    "Multiple sub-tasks?" -> "use superpowers:orchestrator" [label="yes"];
     "Multiple sub-tasks?" -> "Use single skill or agent" [label="no"];
 }
 ```
+
+**Two entry paths:**
+- **From brainstorming** — Spec already written and approved. Read spec, skip clarification, go directly to skill routing.
+- **Direct invocation** — No spec exists. User describes a coordination task (parallel bugs, multi-step refactor, etc.). Do quick clarification first.
 
 **Use when:**
 - Task spans multiple domains (UI + backend, design + implementation)
 - Multiple sub-tasks with dependencies between them
 - Need to run tasks in parallel with context flow
 - Task complexity is beyond simple sequential agent dispatch
+- Brainstorming completed and spec is ready for execution
 
 **Don't use when:**
 - Simple single-domain task → use the relevant skill directly
-- Building something from scratch → use `superpowers:brainstorming` first
-- Already have a written plan → use `superpowers:subagent-driven-development`
+- Need to design something new → use `superpowers:brainstorming` first
+- Already have a written implementation plan → use `superpowers:subagent-driven-development`
 
 ## The Four Phases
 
 Phases execute in order: **Clarify → Route Skills → Decide Mode → Execute**
 
-### Phase 1: Clarify Requirements
+### Phase 1: Understand the Task
 
-Engage in multi-turn dialogue to understand the task. Do NOT skip this phase.
+**Two modes based on entry path:**
 
-**Process:**
+**Mode A — Spec Available (from brainstorming):**
+1. Read the spec document
+2. Extract sub-tasks, dependencies, and technical domains from the spec
+3. Skip clarification — spec already captures user intent
+4. Proceed directly to Phase 2
 
+**Mode B — No Spec (direct invocation):**
 1. **Explore context** — Check current project state (files, recent changes, relevant code)
-2. **Ask one question at a time** — Understand:
-   - What is the overall goal?
-   - What sub-tasks are involved?
-   - What are the dependencies between sub-tasks?
-   - What technical domains are involved?
-   - What are the constraints or non-goals?
+2. **Ask one question at a time** — Understand: overall goal, sub-tasks, dependencies, domains, constraints
 3. **Confirm understanding** — Restate the task in your own words, ask for approval
 
-**Questions to ask (pick relevant ones, one at a time):** overall goal, sub-tasks and their dependencies, technical domains involved, constraints, and what "done" looks like.
+**Scope check:** If the task requires open-ended design exploration (not just coordination), stop and recommend `superpowers:brainstorming` first. Orchestrator coordinates known work — it does not design from scratch.
 
-**Exception:** If the request is to design something entirely new from scratch, recommend using `superpowers:brainstorming` → `superpowers:writing-plans` instead. Orchestrator is for coordinating known tasks, not open-ended design exploration.
+**Decision: Is this too large for one plan?** If the spec or task description covers multiple independent subsystems, flag this. Suggest decomposing into separate spec → orchestrator cycles, one per subsystem.
 
 **Output of Phase 1:** A structured list of sub-tasks with dependencies noted.
 
@@ -130,7 +136,9 @@ Execute using the selected mode. Read `workflow-patterns.md` in this skill's dir
 ## Integration
 
 **Required workflow skills:**
+- **superpowers:brainstorming** — Design phase (precedes orchestrator for new features). Terminal state of brainstorming is invoking orchestrator.
 - **superpowers:skill-router** — Phase 2 skill discovery
+- **superpowers:writing-plans** — Creates detailed implementation plan (invoked by orchestrator when spec needs task breakdown)
 - **superpowers:dispatching-parallel-agents** — Simplified parallel dispatch (alternative to full Workflow for simple cases)
 - **superpowers:subagent-driven-development** — Sequential plan execution (alternative for pre-written plans)
 
