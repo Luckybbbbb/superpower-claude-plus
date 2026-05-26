@@ -1,5 +1,19 @@
 # Workflow & Team Patterns Reference
 
+## Before Using Any Pattern — Required Placeholders
+
+Every `agent()` call in your script MUST include these elements:
+
+1. **Skill injection** — Append the injection string from `SKILL_INJECTIONS[taskName]`. If the array is empty, no injection needed.
+2. **Upstream context** — For pipeline stages, prepend `"Previous stage output:\n" + JSON.stringify(prevResult)`. Not needed for Level 0 tasks.
+3. **Task description** — The actual implementation instructions.
+
+**Validation:** After writing your script, search for every `agent(` call and verify each one has:
+- Either a `SKILL_INJECTIONS[...]` reference or a comment explaining "no skills matched"
+- Either upstream context injection or a comment "Level 0 — no upstream dependency"
+
+If any `agent()` call is missing these, fix before proceeding.
+
 Patterns for building Workflow scripts and Team configurations. Use these as templates when constructing the execution phase.
 
 ## Pattern 1: Simple Pipeline
