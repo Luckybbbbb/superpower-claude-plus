@@ -150,12 +150,12 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 ## Execution Handoff
 
-After saving the plan, route based on execution strategy:
+After saving the plan, the execution strategy in the plan header determines what happens next:
 
-**If execution strategy has parallel groups or dependencies:**
-The plan came from orchestrator. Return to orchestrator with the completed plan. Orchestrator will handle execution using the appropriate mode (Workflow/Team/Agent with coordination).
+**If plan has execution strategy from orchestrator (non-sequential):**
+Orchestrator is waiting for this plan to be completed. Announce the plan is ready and stop — orchestrator will read the plan and handle execution (dispatch agents, inject skills, manage dependencies). Do NOT invoke subagent-driven-development or executing-plans yourself.
 
-**If execution strategy is "Sequential execution" (no orchestrator):**
+**If plan has "Sequential execution" (written directly, no orchestrator):**
 Offer execution choice:
 
 **"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
