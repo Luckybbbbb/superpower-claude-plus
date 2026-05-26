@@ -100,6 +100,18 @@ Read the routing logic in `routing-logic.md` (in this skill's directory) and sel
 
 ### Phase 4: Execute
 
+**PRE-FLIGHT CHECKPOINT (MANDATORY):**
+
+Before writing ANY Workflow script, Team config, or Agent prompt, complete this checklist:
+
+1. Phase 2 produced skill routing results (even if "no matches found")
+2. For each sub-task with matched skills, prepare the injection string:
+   `"IMPORTANT: Before starting, invoke the Skill tool with skill=\"{matched-skill-name}\" to load domain-specific guidance."`
+3. Build a `SKILL_INJECTIONS` map at the top of your Workflow script (see routing-logic.md "Phase 2 → Phase 4 Data Contract")
+4. Verify EVERY `agent()` call includes skill injection when SKILL_INJECTIONS has entries for that task
+
+If any `agent()` prompt is missing skill injection when Phase 2 found matches, STOP and fix before continuing.
+
 Route based on execution mode decided in Phase 3.
 
 **Workflow Mode — Direct Execution:**
