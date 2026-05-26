@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# PostToolUse hook for Skill tool
+# Injects a reminder after brainstorming skill loads that orchestrator is the next step.
+
+set -euo pipefail
+
+# Read hook input from stdin
+input=$(cat)
+
+# Extract skill name from tool_input
+skill_name=$(echo "$input" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    ti = data.get('tool_input', {})
+    # Skill tool uses 'skill' parameter
+    print(ti.get('skill', ''))
+except:
+    print('')
+" 2>/dev/null || echo "")
+
+# Normalize skill name (handle plugin-qualified names)
+skill_lower=$(echo "$skill_name" | tr '[:upper:]' '[:lower:]')
+
+# Check if this is the brainstorming skill being loaded
+if [[ "$skill_lower" == *"brainstorming"* ]]; then
+    reminder="ORCHESTRATOR REMINDER: brainstorming's terminal state is orchestrator, NOT writing-plans. After the design is approved and spec is written, invoke superpowers:orchestrator to coordinate execution. Do NOT invoke writing-plans directly after brainstorming."
+    printf '%s\n' "{\"hookSpecificOutput\":{\"additionalContext\":\"${reminder}\"}}"
+    exit 0
+fi
+
+# No reminder needed for other skills
+exit 0

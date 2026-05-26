@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# PreToolUse hook for Skill tool
+# When writing-plans is about to be invoked, checks if there's evidence
+# that orchestrator was skipped. Injects a reminder (non-blocking).
+
+set -euo pipefail
+
+# Read hook input from stdin
+input=$(cat)
+
+# Extract skill name from tool_input
+skill_name=$(echo "$input" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    ti = data.get('tool_input', {})
+    print(ti.get('skill', ''))
+except:
+    print('')
+" 2>/dev/null || echo "")
+
+# Normalize skill name
+skill_lower=$(echo "$skill_name" | tr '[:upper:]' '[:lower:]')
+
+# Only act when writing-plans is being invoked
+if [[ "$skill_lower" != *"writing-plans"* ]]; then
+    exit 0
+fi
+
+# Check if this was invoked from orchestrator by looking for execution context
+# in the current conversation. We can't check transcript content from hooks,
+# so we inject a gentle reminder instead.
+# The skill itself has the hard enforcement (Execution Handoff section).
+printf '%s\n' '{"decision":"allow","permissionDecisionReason":"writing-plans invoked — remember to check Execution Strategy in plan header. If it came from orchestrator, embed it and STOP after saving the plan. If sequential, offer execution choice."}'
+exit 0
