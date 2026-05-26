@@ -100,13 +100,26 @@ Read the routing logic in `routing-logic.md` (in this skill's directory) and sel
 
 ### Phase 4: Execute
 
-Execute using the selected mode. Read `workflow-patterns.md` in this skill's directory for construction patterns and code templates.
+Route based on execution mode decided in Phase 3.
 
-**Agent Mode:** Dispatch single Agent with skill injection in prompt. Review result.
+**Workflow Mode — Direct Execution:**
+Build a Workflow script using patterns from `workflow-patterns.md`. Do NOT invoke writing-plans — Workflow handles its own task construction. Each `agent()` call gets skill injection. Use `pipeline()` for sequential stages, `parallel()` for independent tasks.
 
-**Workflow Mode:** Build a Workflow script with `pipeline()` for sequential stages and `parallel()` for independent tasks. Each `agent()` call gets skill injection.
+**Team Mode — Direct Execution:**
+Create team, create tasks with `addBlockedBy` dependencies, spawn teammates with skill injection. Do NOT invoke writing-plans — Team handles its own coordination. Monitor via `TaskList`, shutdown when done.
 
-**Team Mode:** Create team, create tasks with `addBlockedBy` dependencies, spawn teammates with skill injection in their prompts, monitor via `TaskList`, shutdown when done.
+**Agent Mode — Via writing-plans:**
+If sub-tasks need detailed implementation plans (code steps, file paths, test commands), invoke `superpowers:writing-plans`. Pass an **execution context** that writing-plans embeds in the plan header:
+
+```
+Execution Context (pass to writing-plans):
+- execution_mode: agent
+- skill_injections: {task-name: ["skill-a", "skill-b"]}
+- dependencies: {task-3: [task-1, task-2]}
+- parallel_groups: [[task-1, task-2]]
+```
+
+If sub-tasks are simple enough (clear scope, 1-2 files each), skip writing-plans and dispatch agents directly.
 
 **Skill injection pattern (all modes):** Append to every agent prompt: `Before starting, invoke the Skill tool with skill="{matched-skill-name}" to load domain-specific guidance.`
 

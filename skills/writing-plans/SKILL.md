@@ -57,8 +57,22 @@ This structure informs the task decomposition. Each task should produce self-con
 
 **Tech Stack:** [Key technologies/libraries]
 
+**Execution Strategy:** (if provided by orchestrator, include verbatim; otherwise write "Sequential execution")
+
+- Mode: [agent | sequential]
+- Parallel groups: [list of task sets that can run concurrently, or "none"]
+- Dependencies: [which tasks depend on which, or "none"]
+- Skill injections: [per-task skill loading instructions, or "none"]
+
 ---
 ```
+
+**Execution Strategy** tells the executor how tasks relate to each other:
+- **Parallel groups** — Tasks within the same group can be dispatched concurrently (e.g., `[Task 1, Task 2]` means both can start immediately)
+- **Dependencies** — Explicit ordering (e.g., `Task 3 depends on Task 1, Task 2` means Task 3 waits)
+- **Skill injections** — Per-task skill loading (e.g., `Task 2: invoke skill="ui-ux-pro-max:ui-ux-pro-max"`)
+
+When this plan comes from `superpowers:orchestrator`, the execution strategy is pre-determined. When writing-plans is invoked directly (no orchestrator), default to sequential execution with no parallel groups.
 
 ## Task Structure
 
@@ -69,6 +83,9 @@ This structure informs the task decomposition. Each task should produce self-con
 - Create: `exact/path/to/file.py`
 - Modify: `exact/path/to/existing.py:123-145`
 - Test: `tests/exact/path/to/test.py`
+
+**Dependencies:** (if execution strategy has dependencies) Task N depends on [Task X, Task Y]. Wait for those to complete before starting.
+**Skill injection:** (if execution strategy has skill injections) Before starting, invoke Skill tool with `skill="[skill-name]"` to load domain-specific guidance.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -133,7 +150,13 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After saving the plan, route based on execution strategy:
+
+**If execution strategy has parallel groups or dependencies:**
+The plan came from orchestrator. Return to orchestrator with the completed plan. Orchestrator will handle execution using the appropriate mode (Workflow/Team/Agent with coordination).
+
+**If execution strategy is "Sequential execution" (no orchestrator):**
+Offer execution choice:
 
 **"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
 
@@ -146,6 +169,7 @@ After saving the plan, offer execution choice:
 **If Subagent-Driven chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
 - Fresh subagent per task + two-stage review
+- For tasks with skill injections: include the skill loading instruction in the subagent's prompt
 
 **If Inline Execution chosen:**
 - **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
