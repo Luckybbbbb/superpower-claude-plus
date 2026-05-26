@@ -82,19 +82,30 @@ BEFORE starting this task, you MUST invoke the Skill tool with skill="{matched-s
 
 The orchestrator appends these injection blocks to each agent's prompt before dispatch.
 
-## Output Format
+## Output Format (MANDATORY)
 
-Return results as a structured list:
+<HARD-GATE>
+Your output MUST follow this exact structured format. The orchestrator's Phase 4 consumes this output programmatically. Do NOT summarize in prose, tables, or narrative. Do NOT omit the INJECT lines. Each task MUST have its injection strings ready to copy-paste into agent prompts.
+</HARD-GATE>
 
 ```
-Task: [task description]
-Matched Skills (priority order):
-  1. {skill-name} — {match reason}
-     Injection: "Invoke Skill tool with skill='{skill-name}' before starting"
+=== SKILL ROUTING RESULTS ===
+
+TASK: {task-id-or-description}
+STATUS: {MATCHED | NO_MATCH}
+  1. {skill-name} — {match reason: which keywords overlapped}
+     INJECT: "IMPORTANT: Before starting, invoke the Skill tool with skill=\"{skill-name}\" to load domain-specific guidance."
   2. {skill-name} — {match reason}
-     Injection: "Invoke Skill tool with skill='{skill-name}' before starting"
-Unmatched: [brief note if no skills matched]
+     INJECT: "IMPORTANT: Before starting, invoke the Skill tool with skill=\"{skill-name}\" to load domain-specific guidance."
+
+TASK: {next-task-id-or-description}
+STATUS: NO_MATCH
+(no specialized skills needed for this task)
+
+=== END ROUTING RESULTS ===
 ```
+
+Every TASK block MUST include STATUS and either INJECT lines or a NO_MATCH explanation.
 
 ## Common Mistakes
 
