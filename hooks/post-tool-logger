@@ -10,21 +10,46 @@ if [[ ! -f "$LOG_DIR/.enabled" ]]; then
     exit 0
 fi
 
-# --- Read stdin and pipe to python3 ---
-cat | python3 -c "
+# --- Read stdin into variable so we can use it twice ---
+input=$(cat || true)
+
+# --- Debug: dump raw stdin keys to a debug file (first 5 calls only) ---
+DEBUG_FILE="$LOG_DIR/.debug-raw"
+DEBUG_COUNT=0
+if [[ -f "$DEBUG_FILE" ]]; then
+    DEBUG_COUNT=$(wc -l < "$DEBUG_FILE" 2>/dev/null || echo 0)
+fi
+if [[ "$DEBUG_COUNT" -lt 5 ]]; then
+    echo "$input" >> "$DEBUG_FILE"
+fi
+
+# --- Parse and format via python3 ---
+echo "$input" | python3 -c "
 import sys, json, os
 from datetime import datetime
 
 try:
-    data = json.loads(sys.stdin.read())
+    raw = sys.stdin.read()
+    data = json.loads(raw)
 except Exception:
     sys.exit(0)
 
 tool_name = data.get('tool_name', '')
 tool_input = data.get('tool_input', {})
-tool_result = data.get('tool_result', '')
 session_id = data.get('session_id', '')
 cwd = data.get('cwd', '')
+
+# Discover all top-level keys for field mapping
+all_keys = sorted(data.keys())
+
+# Try multiple possible field names for tool result
+tool_result = (
+    data.get('tool_result') or
+    data.get('tool_response') or
+    data.get('result') or
+    data.get('output') or
+    ''
+)
 
 # Build log entry
 entry = {
@@ -33,6 +58,7 @@ entry = {
     'tool_name': tool_name,
     'tool_input': tool_input,
     'cwd': cwd,
+    '_keys': all_keys,
 }
 
 # Skill-specific: extract skill_name to top level for easy grepping
@@ -45,25 +71,35 @@ if tool_name == 'Skill':
 if isinstance(tool_result, str):
     r_len = len(tool_result)
 elif isinstance(tool_result, list):
-    r_len = sum(len(str(b)) for b in tool_result)
+    r_len = sum(len(json.dumps(b, ensure_ascii=False)) for b in tool_result)
+elif isinstance(tool_result, dict):
+    r_len = len(json.dumps(tool_result, ensure_ascii=False))
 else:
-    r_len = len(str(tool_result))
+    r_len = len(str(tool_result)) if tool_result else 0
 
 entry['result_len'] = r_len
 
-preview = str(tool_result) if not isinstance(tool_result, str) else tool_result
-if len(preview) <= 500:
-    entry['result_preview'] = preview
+if r_len == 0:
+    entry['result_preview'] = ''
+elif isinstance(tool_result, str):
+    if len(tool_result) <= 500:
+        entry['result_preview'] = tool_result
+    else:
+        entry['result_preview'] = tool_result[:400] + '...[truncated, total=' + str(r_len) + ']'
 else:
-    entry['result_preview'] = preview[:400] + '...[truncated, total=' + str(r_len) + ']'
+    dumped = json.dumps(tool_result, ensure_ascii=False)
+    if len(dumped) <= 500:
+        entry['result_preview'] = dumped
+    else:
+        entry['result_preview'] = dumped[:400] + '...[truncated, total=' + str(r_len) + ']'
 
 # Determine log file path (daily rotation)
 log_dir = os.path.expanduser('~/.claude/superpowers-logs')
 today = datetime.now().strftime('%Y-%m-%d')
 log_file = os.path.join(log_dir, today + '.jsonl')
 
-# Append as single line JSON
-line = json.dumps(entry, ensure_ascii=False)
+# Append as single line JSON — use separators to minimize whitespace
+line = json.dumps(entry, ensure_ascii=False, separators=(',', ':'))
 with open(log_file, 'a', encoding='utf-8') as f:
     f.write(line + '\n')
 " 2>/dev/null || true
