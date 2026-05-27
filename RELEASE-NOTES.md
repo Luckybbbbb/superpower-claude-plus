@@ -1,5 +1,42 @@
 # Superpowers Release Notes
 
+## v5.2.3 (2026-05-27)
+
+### Fixed
+
+**Improved tool call logger -- discover result fields, debug raw dump, compact JSON**
+
+- Tool result field discovery: tries `tool_result`, `tool_response`, `result`, `output` in sequence, since the actual field name in Claude Code's hook stdin payload was unknown at design time
+- Debug raw dump: writes first 5 stdin payloads to `~/.claude/superpowers-logs/.debug-raw` for field mapping diagnosis
+- Discovers all top-level keys from stdin JSON and logs them as `_keys` field for ongoing schema exploration
+- Handles `tool_result` as list, dict, or string with correct length calculation
+- Compact JSON output: uses `separators=(',', ':')` to minimize log file size
+- Empty `tool_result` now logs empty string instead of `''` for consistency
+
+## v5.2.2 (2026-05-27)
+
+### New Features
+
+**PostToolUse tool call logger**
+
+New `hooks/post-tool-logger` hook records every tool call to `~/.claude/superpowers-logs/YYYY-MM-DD.jsonl` for session observability. Uses an empty matcher (matches all tools) and runs async so it doesn't block the agent.
+
+- JSONL format with daily rotation, one log entry per tool call
+- Records: timestamp, session ID, tool name, tool input, result length, result preview (truncated to 500 chars), working directory
+- Skill-specific: extracts `skill_name` to top level for easy grepping
+- Toggle control via marker file `~/.claude/superpowers-logs/.enabled` -- only logs when this file exists
+- Error-tolerant: JSON parse failures and write errors silently skip, never affecting tool call flow
+- Concurrent-safe: append mode with single-line JSON per entry
+- Zero external dependencies: uses only bash and python3 (stdlib)
+
+Motivation: the plugin had no mechanism to verify which skills were invoked, when, or in what order. This made it impossible to diagnose "skill was injected but agent didn't follow it" vs "skill was never invoked at all."
+
+Design spec: `docs/superpowers/specs/2026-05-27-tool-call-logger-design.md`
+
+### Hooks
+
+- `hooks.json` and `hooks-cursor.json`: added PostToolUse entry with empty matcher, async execution
+
 ## v5.1.0 (2026-04-30)
 
 ### Removals
