@@ -17,7 +17,7 @@
 
 ## 方案概述
 
-利用 Claude Code 的 `PostToolUse` hook 事件，新增一个 matcher 为 `*` 的 hook，在每次工具调用完成后将关键信息追加写入按天分割的 JSONL 日志文件。
+利用 Claude Code 的 `PostToolUse` hook 事件，新增一个 matcher 为空（匹配所有工具）的 hook，在每次工具调用完成后将关键信息追加写入按天分割的 JSONL 日志文件。
 
 ## 架构
 
@@ -110,6 +110,7 @@ hooks/
 - 不保留完整 `tool_result`
 - 记录 `result_len`（原始长度）和 `result_preview`（截断预览）
 - `result_preview` 策略：总长度 <= 500 则完整保留；否则取前 400 字符 + `...[truncated, total=N]`
+- 截断在字符级别操作（python3 `str[:n]`），不会破坏多字节 UTF-8 字符
 
 ### 开关控制
 

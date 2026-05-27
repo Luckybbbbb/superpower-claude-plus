@@ -23,6 +23,16 @@
             "async": false
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CURSOR_PLUGIN_ROOT}/hooks/run-hook.cmd\" post-tool-logger",
+            "async": true
+          }
+        ]
       }
     ],
     "PreToolUse": [

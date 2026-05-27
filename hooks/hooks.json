@@ -22,6 +22,16 @@
             "async": false
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/run-hook.cmd\" post-tool-logger",
+            "async": true
+          }
+        ]
       }
     ],
     "PreToolUse": [

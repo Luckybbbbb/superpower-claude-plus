@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# PostToolUse hook — logs every tool call to ~/.claude/superpowers-logs/YYYY-MM-DD.jsonl
+# Matcher: empty (matches all tools). Runs async so it doesn't block the agent.
+
+set -euo pipefail
+
+# --- Toggle: only log when marker file exists ---
+LOG_DIR="$HOME/.claude/superpowers-logs"
+if [[ ! -f "$LOG_DIR/.enabled" ]]; then
+    exit 0
+fi
+
+# --- Read stdin and pipe to python3 ---
+cat | python3 -c "
+import sys, json, os
+from datetime import datetime
+
+try:
+    data = json.loads(sys.stdin.read())
+except Exception:
+    sys.exit(0)
+
+tool_name = data.get('tool_name', '')
+tool_input = data.get('tool_input', {})
+tool_result = data.get('tool_result', '')
+session_id = data.get('session_id', '')
+cwd = data.get('cwd', '')
+
+# Build log entry
+entry = {
+    'ts': datetime.now().astimezone().isoformat(timespec='seconds'),
+    'session_id': session_id,
+    'tool_name': tool_name,
+    'tool_input': tool_input,
+    'cwd': cwd,
+}
+
+# Skill-specific: extract skill_name to top level for easy grepping
+if tool_name == 'Skill':
+    skill = tool_input.get('skill', '')
+    if skill:
+        entry['skill_name'] = skill
+
+# tool_result handling: keep length + truncated preview
+if isinstance(tool_result, str):
+    r_len = len(tool_result)
+elif isinstance(tool_result, list):
+    r_len = sum(len(str(b)) for b in tool_result)
+else:
+    r_len = len(str(tool_result))
+
+entry['result_len'] = r_len
+
+preview = str(tool_result) if not isinstance(tool_result, str) else tool_result
+if len(preview) <= 500:
+    entry['result_preview'] = preview
+else:
+    entry['result_preview'] = preview[:400] + '...[truncated, total=' + str(r_len) + ']'
+
+# Determine log file path (daily rotation)
+log_dir = os.path.expanduser('~/.claude/superpowers-logs')
+today = datetime.now().strftime('%Y-%m-%d')
+log_file = os.path.join(log_dir, today + '.jsonl')
+
+# Append as single line JSON
+line = json.dumps(entry, ensure_ascii=False)
+with open(log_file, 'a', encoding='utf-8') as f:
+    f.write(line + '\n')
+" 2>/dev/null || true
+
+exit 0
