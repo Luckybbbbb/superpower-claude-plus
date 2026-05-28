@@ -79,14 +79,16 @@ hooks/
 **日志输出格式**（JSONL，每行一条）：
 ```json
 {
-  "ts": "2026-05-27T14:30:00+08:00",
+  "ts": "2026-05-28T14:30:00+08:00",
   "session_id": "abc123",
   "tool_name": "Skill",
   "skill_name": "brainstorming",
   "tool_input": { "skill": "brainstorming" },
   "result_len": 42,
   "result_preview": "...",
-  "cwd": "E:\\AIDemos\\my-project"
+  "cwd": "E:\\AIDemos\\my-project",
+  "plugin_version": "5.2.3",
+  "duration_ms": 85
 }
 ```
 
@@ -99,9 +101,11 @@ hooks/
 | `tool_name` | stdin | 工具名称（Skill、Read、Edit、Bash 等） |
 | `skill_name` | 从 tool_input 提取 | 仅 tool_name 为 Skill 时存在，顶层冗余字段方便 grep |
 | `tool_input` | stdin | 工具输入参数（完整保留） |
-| `result_len` | 从 tool_result 计算 | tool_result 的字符长度 |
-| `result_preview` | 从 tool_result 截取 | tool_result 的前 500 字符（截断处理） |
+| `result_len` | 从 tool_response 计算 | tool_response 的字符长度 |
+| `result_preview` | 从 tool_response 截取 | tool_response 的前 500 字符（截断处理） |
 | `cwd` | stdin | 当前工作目录 |
+| `plugin_version` | plugin.json | 插件版本号（如 "5.2.3"），用于区分版本变更导致的行为差异 |
+| `duration_ms` | stdin | 工具调用耗时（毫秒），仅当 hook stdin 提供时存在 |
 
 ### tool_result 截断策略
 

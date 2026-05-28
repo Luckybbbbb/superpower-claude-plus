@@ -135,8 +135,14 @@ Wait for the user's response. If they request changes, make them and re-run the 
 
 **Implementation:**
 
-- Invoke the orchestrator skill to plan execution strategy
-- Orchestrator will read this spec, select execution mode, and invoke writing-plans if needed
+<HARD-GATE>
+After the user approves the spec, your NEXT action MUST be invoking the Skill tool with `skill="superpower-claude-plus:orchestrator"`. This is not optional. Do NOT start coding, editing files, or dispatching agents. Do NOT invoke writing-plans, subagent-driven-development, or any other implementation skill. The ONLY valid next step is orchestrator.
+
+If you feel the urge to skip this and "just start implementing" — that is the exact moment this gate exists to prevent.
+</HARD-GATE>
+
+- Invoke the Skill tool: `skill="superpower-claude-plus:orchestrator"`, passing the spec path
+- Orchestrator will read the spec, select execution mode, and invoke writing-plans if needed
 - Do NOT invoke writing-plans directly. orchestrator is the next step.
 
 ## Key Principles
@@ -147,6 +153,15 @@ Wait for the user's response. If they request changes, make them and re-run the 
 - **Explore alternatives** - Always propose 2-3 approaches before settling
 - **Incremental validation** - Present design, get approval before moving on
 - **Be flexible** - Go back and clarify when something doesn't make sense
+
+## Red Flags
+
+| Thought | Reality |
+|---------|---------|
+| "The spec is done, I'll start coding now" | You must invoke orchestrator first. Skipping it means no skill routing, no execution mode selection. |
+| "This is simple enough to skip orchestrator" | That's what every session thinks. Log analysis shows 0% orchestrator invocation rate. Use it. |
+| "I'll just dispatch agents sequentially" | Without orchestrator there's no skill injection, no dependency management, no SKILL_INJECTIONS. |
+| "The user wants me to start implementing" | They want results, and orchestrator is how you get reliable results. Invoke it. |
 
 ## Visual Companion
 
