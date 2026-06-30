@@ -1,6 +1,7 @@
 {
   "name": "superpower-claude-plus",
-  "version": "5.2.4",
+  "version": "6.0.3",
+  "description": "Superpowers skills and runtime bootstrap for coding agents",
   "type": "module",
   "main": ".opencode/plugins/superpowers.js",
   "author": {
@@ -12,5 +13,23 @@
     "type": "git",
     "url": "https://github.com/Luckybbbbb/superpower-claude-plus.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "keywords": [
+    "pi-package",
+    "skills",
+    "tdd",
+    "debugging",
+    "collaboration",
+    "workflow",
+    "orchestrator",
+    "skill-router"
+  ],
+  "pi": {
+    "extensions": [
+      "./.pi/extensions/superpowers.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  }
 }

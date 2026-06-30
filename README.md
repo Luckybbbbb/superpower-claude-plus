@@ -12,7 +12,7 @@ Enhanced superpowers plugin for Claude Code with orchestrator coordination, skil
 
 ## Quickstart
 
-Give your agent Superpowers: [Claude Code](#claude-code), [Codex CLI](#codex-cli), [Cursor](#cursor).
+Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex CLI](#codex-cli), [Cursor](#cursor), [Gemini CLI](#gemini-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
 
 ## How it works
 
@@ -50,7 +50,19 @@ If you prefer the upstream version without orchestrator enhancements:
 /plugin install superpowers@claude-plugins-official
 ```
 
+### Antigravity
+
+Install Superpower Claude Plus as a plugin from this repository:
+
+```bash
+agy plugin install https://github.com/Luckybbbbb/superpower-claude-plus
+```
+
+Antigravity runs the plugin's session-start hook, so Superpowers is active from the first message. Reinstall with the same command to update.
+
 ### Codex CLI
+
+Register the marketplace and install from this repository:
 
 ```bash
 droid plugin marketplace add https://github.com/Luckybbbbb/superpower-claude-plus
@@ -60,18 +72,6 @@ droid plugin marketplace add https://github.com/Luckybbbbb/superpower-claude-plu
 droid plugin install superpower-claude-plus@superpower-claude-plus
 ```
 
-### Gemini CLI
-
-```bash
-gemini extensions install https://github.com/Luckybbbbb/superpower-claude-plus
-```
-
-### OpenCode
-
-```
-Fetch and follow instructions from https://raw.githubusercontent.com/Luckybbbbb/superpower-claude-plus/refs/heads/main/.opencode/INSTALL.md
-```
-
 ### Cursor
 
 - In Cursor Agent chat, install from marketplace:
@@ -79,6 +79,54 @@ Fetch and follow instructions from https://raw.githubusercontent.com/Luckybbbbb/
   ```text
   /add-plugin superpower-claude-plus
   ```
+
+- Or search for "superpower-claude-plus" in the plugin marketplace.
+
+### Gemini CLI
+
+```bash
+gemini extensions install https://github.com/Luckybbbbb/superpower-claude-plus
+```
+
+### Kimi Code
+
+Superpower Claude Plus is available in Kimi Code's plugin marketplace.
+
+- Open Kimi Code's plugin manager:
+
+  ```text
+  /plugins
+  ```
+
+- Go to `Marketplace` and install it, or install directly from this repository:
+
+  ```text
+  /plugins install https://github.com/Luckybbbbb/superpower-claude-plus
+  ```
+
+### OpenCode
+
+Tell OpenCode to fetch and follow the install instructions:
+
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/Luckybbbbb/superpower-claude-plus/refs/heads/main/.opencode/INSTALL.md
+```
+
+### Pi
+
+Install Superpower Claude Plus as a Pi package from this repository:
+
+```bash
+pi install git:github.com/Luckybbbbb/superpower-claude-plus
+```
+
+For local development, run Pi with this checkout loaded as a temporary package:
+
+```bash
+pi -e /path/to/superpower-claude-plus
+```
+
+The Pi package loads the Superpowers skills and a small extension that injects the `using-superpowers` bootstrap at session startup and again after compaction. Pi has native skills, so no compatibility `Skill` tool is required.
 
 ## The Workflow
 

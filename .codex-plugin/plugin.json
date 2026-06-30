@@ -1,6 +1,6 @@
 {
   "name": "superpower-claude-plus",
-  "version": "5.2.4",
+  "version": "6.0.3",
   "description": "Enhanced superpowers: orchestrator, skill-router, Team/Workflow integration, TDD, debugging, and collaboration workflows.",
   "author": {
     "name": "Luckybbbbb",
@@ -22,6 +22,7 @@
     "skill-router"
   ],
   "skills": "./skills/",
+  "hooks": "./hooks/hooks-codex.json",
   "interface": {
     "displayName": "Superpower Claude Plus",
     "shortDescription": "Planning, TDD, debugging, orchestrator, and delivery workflows for coding agents",
